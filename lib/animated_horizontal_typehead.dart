@@ -10,6 +10,7 @@ class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidg
     this.startLookupLenght = 3,
     this.initialHeight = 80,
     this.expandedHeight = 284,
+    this.smallerResultTitle = false,
     this.rawItemBuilder,
     this.containerDecoration,
     this.scrollController,
@@ -19,6 +20,7 @@ class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidg
 
   final double initialHeight;
   final double expandedHeight;
+  final bool smallerResultTitle;
   final Future<Iterable<T>> Function(String value) onLookup;
   final Function(T selected) onSelected;
   final HorizontalTypeHeadResultWidget? selectedModelBuilder;
@@ -118,13 +120,15 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
         childList = _data.map((e) => widget.rawItemBuilder!(context, e)).toList();
       } else {
         childList = _data
-            .map((e) => HorizontalTypeHeadResultWidget(HorizontalTypeHeadModel(
-                title: e.title, body: e.body, imageUrl: e.imageUrl)))
+            .map((e) => HorizontalTypeHeadResultWidget(
+                HorizontalTypeHeadModel(
+                    title: e.title, body: e.body, imageUrl: e.imageUrl),
+                widget.smallerResultTitle))
             .toList();
       }
       list.add(
         SizedBox(
-          height: 220,
+          height: widget.expandedHeight - 64,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             scrollDirection: Axis.horizontal,
@@ -158,9 +162,11 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
 }
 
 class HorizontalTypeHeadResultWidget extends StatelessWidget {
-  const HorizontalTypeHeadResultWidget(this.model, {Key? key}) : super(key: key);
+  const HorizontalTypeHeadResultWidget(this.model, this.smallerText, {Key? key})
+      : super(key: key);
 
   final HorizontalTypeHeadModel model;
+  final bool smallerText;
 
   @override
   Widget build(BuildContext context) {
@@ -183,12 +189,17 @@ class HorizontalTypeHeadResultWidget extends StatelessWidget {
                 child: Text(
                   model.title,
                   textAlign: TextAlign.center,
-                  maxLines: 2,
+                  maxLines: smallerText ? 3 : 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium!
-                      .copyWith(color: Theme.of(context).colorScheme.onPrimary),
+                  style: smallerText
+                      ? Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(color: Theme.of(context).colorScheme.onPrimary)
+                      : Theme.of(context)
+                          .textTheme
+                          .titleMedium!
+                          .copyWith(color: Theme.of(context).colorScheme.onPrimary),
                 ),
               ),
             ),
