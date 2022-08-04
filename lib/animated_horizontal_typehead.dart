@@ -1,41 +1,44 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
 class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidget {
-  HorizontalTypeHead({
-    Key? key,
-    required this.onLookup,
-    required this.onSelected,
-    this.header,
-    this.selectedModelBuilder,
-    this.startLookupLenght = 3,
-    this.initialHeight = 80,
-    this.expandedHeight = 284,
-    this.smallerResultTitle = false,
-    this.rawItemBuilder,
-    this.containerDecoration,
-    this.scrollController,
-  }) : super(key: key) {
-    assert(T != dynamic);
-  }
+  const HorizontalTypeHead(
+      {Key? key,
+      required this.onLookup,
+      required this.onSelected,
+      this.selectedModelBuilder,
+      this.startLookupLenght = 3,
+      this.initialHeight = 80,
+      this.expandedHeight = 284,
+      this.resultWidth,
+      this.smallerResultTitle = false,
+      this.rawItemBuilder,
+      this.containerDecoration,
+      this.scrollController,
+      this.resultImageBoxFit,
+      this.inputDecoration})
+      : super(key: key);
 
   final double initialHeight;
   final double expandedHeight;
+  final double? resultWidth;
   final bool smallerResultTitle;
   final Future<Iterable<T>> Function(String value) onLookup;
-  final Function(T selected) onSelected;
+  final Function(T model) onSelected;
   final HorizontalTypeHeadResultWidget? selectedModelBuilder;
   final ScrollController? scrollController;
   final int startLookupLenght;
   final Widget Function(BuildContext, dynamic suggestionModel)? rawItemBuilder;
-  final Widget? header;
   final BoxDecoration? containerDecoration;
+  final InputDecoration? inputDecoration;
+  final BoxFit? resultImageBoxFit;
 
   @override
   State<HorizontalTypeHead> createState() => _HorizontalTypeHeadState<T>();
 }
 
 class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
-    extends State<HorizontalTypeHead> {
+    extends State<HorizontalTypeHead<T>> {
   @override
   void initState() {
     _height = widget.initialHeight;
@@ -99,11 +102,12 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
             _animateScroll();
           }
         },
+        decoration: widget.inputDecoration,
         onChanged: (String? val) async {
           if (_locked == false) {
             _locked = true;
             if (val != null && val.length >= widget.startLookupLenght) {
-              _newData = await widget.onLookup(val) as Iterable<T>;
+              _newData = await widget.onLookup(val);
               await _animateHandler();
             } else {
               _newData = [];
@@ -120,15 +124,19 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
         childList = _data.map((e) => widget.rawItemBuilder!(context, e)).toList();
       } else {
         childList = _data
-            .map((e) => HorizontalTypeHeadResultWidget(
-                HorizontalTypeHeadModel(
-                    title: e.title, body: e.body, imageUrl: e.imageUrl),
-                widget.smallerResultTitle))
+            .map((e) => SizedBox(
+                  width: widget.resultWidth,
+                  child: HorizontalTypeHeadResultWidget<T>(
+                      model: e,
+                      onSelected: widget.onSelected,
+                      smallerResultTitle: widget.smallerResultTitle,
+                      imageFit: widget.resultImageBoxFit),
+                ))
             .toList();
       }
       list.add(
         SizedBox(
-          height: widget.expandedHeight - 64,
+          height: widget.expandedHeight - 48,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             scrollDirection: Axis.horizontal,
@@ -145,7 +153,6 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        widget.header ?? const SizedBox.shrink(),
         AnimatedContainer(
           decoration: widget.containerDecoration ??
               BoxDecoration(
@@ -161,49 +168,66 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
   }
 }
 
-class HorizontalTypeHeadResultWidget extends StatelessWidget {
-  const HorizontalTypeHeadResultWidget(this.model, this.smallerText, {Key? key})
+class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
+    extends StatelessWidget {
+  const HorizontalTypeHeadResultWidget(
+      {required this.model,
+      required this.onSelected,
+      required this.smallerResultTitle,
+      this.imageFit,
+      Key? key})
       : super(key: key);
 
-  final HorizontalTypeHeadModel model;
-  final bool smallerText;
+  final T model;
+  final bool smallerResultTitle;
+  final Function(T selected) onSelected;
+  final BoxFit? imageFit;
 
   @override
   Widget build(BuildContext context) {
+    //onSelected(model);
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            SizedBox(
-              child: model.body ?? Image.network(model.imageUrl!, fit: BoxFit.fitHeight),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              width: 120,
-              height: 60,
-              child: Container(
-                color: const Color.fromARGB(180, 0, 0, 0),
-                child: Text(
-                  model.title,
-                  textAlign: TextAlign.center,
-                  maxLines: smallerText ? 3 : 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: smallerText
-                      ? Theme.of(context)
-                          .textTheme
-                          .bodySmall!
-                          .copyWith(color: Theme.of(context).colorScheme.onPrimary)
-                      : Theme.of(context)
-                          .textTheme
-                          .titleMedium!
-                          .copyWith(color: Theme.of(context).colorScheme.onPrimary),
-                ),
+      child: InkWell(
+        onTap: () => {},
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                  child: model.body ??
+                      Image.network(model.imageUrl!, fit: imageFit ?? BoxFit.cover)),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                width: 120,
+                height: 60,
+                child: Container(
+                    padding: const EdgeInsets.all(4.0),
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(180, 0, 0, 0),
+                      borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(20.0),
+                          topLeft: Radius.circular(20.0)),
+                    ),
+                    child: Text(
+                      model.title,
+                      textAlign: TextAlign.center,
+                      maxLines: smallerResultTitle ? 3 : 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: smallerResultTitle
+                          ? Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(color: Theme.of(context).colorScheme.onPrimary)
+                          : Theme.of(context)
+                              .textTheme
+                              .titleMedium!
+                              .copyWith(color: Theme.of(context).colorScheme.onPrimary),
+                    )),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -211,9 +235,10 @@ class HorizontalTypeHeadResultWidget extends StatelessWidget {
 }
 
 class HorizontalTypeHeadModel {
-  HorizontalTypeHeadModel({required this.title, this.body, this.imageUrl})
+  HorizontalTypeHeadModel({required this.title, this.id, this.body, this.imageUrl})
       : assert(body == null || imageUrl == null);
 
+  int? id;
   String title;
   Widget? body;
   String? imageUrl;
