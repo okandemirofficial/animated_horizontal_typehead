@@ -1,4 +1,3 @@
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
 class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidget {
@@ -170,7 +169,7 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
 
 class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
     extends StatelessWidget {
-  const HorizontalTypeHeadResultWidget(
+  HorizontalTypeHeadResultWidget(
       {required this.model,
       required this.onSelected,
       required this.smallerResultTitle,
@@ -180,7 +179,7 @@ class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
 
   final T model;
   final bool smallerResultTitle;
-  final Function(T selected) onSelected;
+  void Function(T selected) onSelected;
   final BoxFit? imageFit;
 
   @override
@@ -189,7 +188,7 @@ class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: InkWell(
-        onTap: () => {},
+        onTap: () => onSelected(model),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: Stack(
