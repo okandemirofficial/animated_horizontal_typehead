@@ -101,7 +101,8 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
             _animateScroll();
           }
         },
-        decoration: widget.inputDecoration,
+        decoration: widget.inputDecoration ??
+            const InputDecoration().applyDefaults(Theme.of(context).inputDecorationTheme),
         onChanged: (String? val) async {
           if (_locked == false) {
             _locked = true;
@@ -169,7 +170,7 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
 
 class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
     extends StatelessWidget {
-  HorizontalTypeHeadResultWidget(
+  const HorizontalTypeHeadResultWidget(
       {required this.model,
       required this.onSelected,
       required this.smallerResultTitle,
@@ -179,7 +180,7 @@ class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
 
   final T model;
   final bool smallerResultTitle;
-  void Function(T selected) onSelected;
+  final void Function(T selected) onSelected;
   final BoxFit? imageFit;
 
   @override
