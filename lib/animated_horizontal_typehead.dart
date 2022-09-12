@@ -15,6 +15,7 @@ class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidg
       this.containerDecoration,
       this.scrollController,
       this.resultImageBoxFit,
+      this.textInputStyle,
       this.inputDecoration})
       : super(key: key);
 
@@ -31,6 +32,7 @@ class HorizontalTypeHead<T extends HorizontalTypeHeadModel> extends StatefulWidg
   final BoxDecoration? containerDecoration;
   final InputDecoration? inputDecoration;
   final BoxFit? resultImageBoxFit;
+  final TextStyle? textInputStyle;
 
   @override
   State<HorizontalTypeHead> createState() => _HorizontalTypeHeadState<T>();
@@ -101,6 +103,7 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
             _animateScroll();
           }
         },
+        style: widget.textInputStyle,
         decoration: widget.inputDecoration ??
             const InputDecoration().applyDefaults(Theme.of(context).inputDecorationTheme),
         onChanged: (String? val) async {
@@ -136,7 +139,7 @@ class _HorizontalTypeHeadState<T extends HorizontalTypeHeadModel>
       }
       list.add(
         SizedBox(
-          height: widget.expandedHeight - 48,
+          height: widget.expandedHeight - 64,
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             scrollDirection: Axis.horizontal,
@@ -192,41 +195,44 @@ class HorizontalTypeHeadResultWidget<T extends HorizontalTypeHeadModel>
         onTap: () => onSelected(model),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                  child: model.body ??
-                      Image.network(model.imageUrl!, fit: imageFit ?? BoxFit.cover)),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                width: 120,
-                height: 60,
-                child: Container(
-                    padding: const EdgeInsets.all(4.0),
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(180, 0, 0, 0),
-                      borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(20.0),
-                          topLeft: Radius.circular(20.0)),
-                    ),
-                    child: Text(
-                      model.title,
-                      textAlign: TextAlign.center,
-                      maxLines: smallerResultTitle ? 3 : 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: smallerResultTitle
-                          ? Theme.of(context)
-                              .textTheme
-                              .bodySmall!
-                              .copyWith(color: Theme.of(context).colorScheme.onPrimary)
-                          : Theme.of(context)
-                              .textTheme
-                              .titleMedium!
-                              .copyWith(color: Theme.of(context).colorScheme.onPrimary),
-                    )),
-              ),
-            ],
+          child: SizedBox(
+            width: 130,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                    child: model.body ??
+                        Image.network(model.imageUrl!, fit: imageFit ?? BoxFit.contain)),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  width: 120,
+                  height: 60,
+                  child: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: const BoxDecoration(
+                        color: Color.fromARGB(180, 0, 0, 0),
+                        borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(20.0),
+                            topLeft: Radius.circular(20.0)),
+                      ),
+                      child: Text(
+                        model.title,
+                        textAlign: TextAlign.center,
+                        maxLines: smallerResultTitle ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: smallerResultTitle
+                            ? Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(color: Theme.of(context).colorScheme.onPrimary)
+                            : Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(color: Theme.of(context).colorScheme.onPrimary),
+                      )),
+                ),
+              ],
+            ),
           ),
         ),
       ),
